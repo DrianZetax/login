@@ -1,4 +1,28 @@
-// Fungsi untuk menghasilkan captcha acak
+import { createCanvas } from 'canvas';
+
+export default function handler(req, res) {
+    const captchaText = generateCaptcha();
+
+    // Simpan captcha dalam session atau memori untuk verifikasi nanti
+    req.session = req.session || {};
+    req.session.captcha = captchaText;
+
+    const canvas = createCanvas(200, 50);
+    const ctx = canvas.getContext('2d');
+
+    // Mengatur warna latar belakang dan teks
+    ctx.fillStyle = '#f1f1f1';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#000';
+    ctx.font = '30px Arial';
+    ctx.fillText(captchaText, 50, 35);
+
+    // Mengirimkan gambar captcha
+    res.setHeader('Content-Type', 'image/png');
+    res.send(canvas.toBuffer('image/png'));
+}
+
+// Fungsi untuk menghasilkan captcha
 function generateCaptcha() {
     const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
     let captcha = '';
@@ -6,22 +30,4 @@ function generateCaptcha() {
         captcha += characters.charAt(Math.floor(Math.random() * characters.length));
     }
     return captcha;
-}
-
-// Menampilkan captcha yang dihasilkan
-const captchaText = generateCaptcha();
-document.getElementById('captchaText').textContent = captchaText;
-
-// Fungsi untuk memverifikasi input pengguna
-function verifyCaptcha() {
-    const userInput = document.getElementById('captchaInput').value;
-    const resultMessage = document.getElementById('resultMessage');
-
-    if (userInput === captchaText) {
-        resultMessage.textContent = 'Captcha berhasil diverifikasi!';
-        resultMessage.style.color = 'green';
-    } else {
-        resultMessage.textContent = 'Captcha salah, coba lagi!';
-        resultMessage.style.color = 'red';
-    }
 }
